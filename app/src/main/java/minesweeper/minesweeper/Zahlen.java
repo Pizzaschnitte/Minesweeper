@@ -3,9 +3,7 @@ package minesweeper.minesweeper;
 import android.widget.Button;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 public class Zahlen {
 

@@ -1,10 +1,8 @@
 package minesweeper.minesweeper;
 
-import android.content.Context;
 import android.widget.Button;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Aufdecken {
 
@@ -117,7 +115,7 @@ public class Aufdecken {
                     setplayed(buttonarray[btntag-1]);
                 }
             }
-        }catch (Exception e1){
+        }catch (Exception ignored){
 
         }
 
@@ -132,7 +130,7 @@ public class Aufdecken {
                     setplayed(buttonarray[btntag+1]);
                 }
             }
-        }catch (Exception e2){
+        }catch (Exception ignored){
 
         }
 
@@ -145,7 +143,7 @@ public class Aufdecken {
                 felder.setnumbericon(buttonarray[btntag-breite], felderarray);
                 setplayed(buttonarray[btntag-breite]);
             }
-        }catch (Exception e3){
+        }catch (Exception ignored){
 
         }
 
@@ -158,7 +156,7 @@ public class Aufdecken {
                 felder.setnumbericon(buttonarray[btntag+breite], felderarray);
                 setplayed(buttonarray[btntag+breite]);
             }
-        }catch (Exception e4){
+        }catch (Exception ignored){
 
         }
 
@@ -173,7 +171,7 @@ public class Aufdecken {
                     setplayed(buttonarray[btntag-(breite-1)]);
                 }
             }
-        }catch (Exception e5){
+        }catch (Exception ignored){
 
         }
 
@@ -188,7 +186,7 @@ public class Aufdecken {
                     setplayed(buttonarray[btntag+(breite-1)]);
                 }
             }
-        }catch (Exception e6){
+        }catch (Exception ignored){
 
         }
 
@@ -203,7 +201,7 @@ public class Aufdecken {
                     setplayed(buttonarray[btntag-(breite+1)]);
                 }
             }
-        }catch (Exception e7){
+        }catch (Exception ignored){
 
         }
 
@@ -218,7 +216,7 @@ public class Aufdecken {
                     setplayed(buttonarray[btntag+(breite+1)]);
                 }
             }
-        }catch (Exception e8){
+        }catch (Exception ignored){
 
         }
         System.out.println("Playstatus ausgeben nach dem Aufdecken");
