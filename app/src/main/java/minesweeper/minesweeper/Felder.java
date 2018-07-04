@@ -71,27 +71,7 @@ public class Felder {
         }
     }
 
-    //Methode die alle Werte zu beginnt beschreibt.
-    protected void initalisieren(int breite, int[] felderarray, Button[] buttonarray, int minenanzahl) {
-
-        //Alle Buttons bekommend as unplayed icon zugewiesen
-        System.out.println("Breite " + breite + minenanzahl);
-        allefelderunplayed(buttonarray, breite);
-
-        Zahlen zahlen = new Zahlen();
-        zahlen.generateminen(breite, felderarray, minenanzahl);
-
-        //Neue Zahlen für jedes Feld generieren, Breite Holt er sich aus der Globalen statischen Variablen
-        for(int i=0; i<breite*breite; i++){
-            Button btn = buttonarray[i];
-            int buttonnumber = (int) btn.getTag();
-            zahlen.createnumbersmain(buttonnumber, btn, felderarray, breite);
-        }
-
-        setstart(breite, felderarray, buttonarray);
-    }
-
-    void setstart(int breite, int[] felderarray, Button[] buttonarray){
+    static void setstart(int breite, int[] felderarray, Button[] buttonarray){
         //Diese Methode setzt für den ersten Freien Button eine Markierung, damit man einenPunkt zum Beginnen hat.
         for (int i=0; i<breite*breite; i++){
             if (felderarray[i]==0){
@@ -100,4 +80,5 @@ public class Felder {
             }
         }
     }
+
 }

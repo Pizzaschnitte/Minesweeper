@@ -34,12 +34,33 @@ public class Game extends AppCompatActivity{
     private Felder felder;
     private Aufdecken Aufdecken;
     //Rändern, welche die Aufdeckenabfrage erleichtern
-    private ArrayList<Integer> rechterrand;
-    private ArrayList<Integer> linkerrand;
+    protected static ArrayList<Integer> rechterrand;
+    protected static ArrayList<Integer> linkerrand;
     //Timer
     private static int time = 0;
     private Runnable timerunnable = null;
     private static Handler handler = null;
+
+    void createraender(int breite){
+        rechterrand = new ArrayList<>();
+        linkerrand = new ArrayList<>();
+        //Ränder beschreiben
+        // Erleichtert die Checks, da nur abgefragt werden muss, ob der Button im Rand ist.
+        int rechts = -1;
+        int links = 0;
+        do{
+            linkerrand.add(links);
+            links=links+breite;
+        }while(links<breite*breite);
+        do{
+            if(rechts>0){
+                rechterrand.add(rechts);
+            }
+            rechts=rechts+breite;
+        }while(rechts<breite*breite);
+        System.out.println("Linker Rand: " + linkerrand);
+        System.out.println("Rechter Rand: " + rechterrand);
+    }
 
     private void createbuttons(TableLayout tableLayout, int breite){
         //Buttons erstellen und einer Reihe hinzufügen
@@ -55,6 +76,7 @@ public class Game extends AppCompatActivity{
                     buttonarray[buttonnumber]=btn;
                     buttonnumber++;
                 }
+                btn.setBackgroundResource(R.drawable.unplayed);
                 btn.setLayoutParams(new TableRow.LayoutParams(150,150));
                 btn.setOnClickListener(clickgame);
                 row.addView(btn);
@@ -165,29 +187,13 @@ public class Game extends AppCompatActivity{
         }
     }
 
-    void createraender(){
-        int rechts = -1;
-        int links = 0;
-        do{
-            linkerrand.add(links);
-            links=links+breite;
-        }while(links<breite*breite);
-        do{
-            if(rechts>0){
-                rechterrand.add(rechts);
-            }
-            rechts=rechts+breite;
-        }while(rechts<breite*breite);
-
-        System.out.println(linkerrand);
-        System.out.println(rechterrand);
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         //Aktivität erstellen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        //Die folgenden Aktionen werden immer nur ein mal ausgeführt beim starten des Intents
 
         //Daten aus Intent auslesen
         Intent gfh = getIntent();
@@ -202,17 +208,12 @@ public class Game extends AppCompatActivity{
         //Objekte erstellen inkl. Timer
         createobjekts();
 
-        //Ränder Arraylisten befüllen
-        createraender();
+        //Ränder erstellen
+        createraender(breite);
 
         //Spielfeld-Buttons erstellen
         createbuttons(tableLayout, breite);
 
-        //Were erstellen (Minen, Zahlen, usw.)
-        felder.initalisieren(breite, felderarray, buttonarray, minenanzahl);
-
-        //Timer starten
-        timerunnable.run();
     }
 
     View.OnClickListener clickgamemenue = new View.OnClickListener() {
@@ -246,29 +247,65 @@ public class Game extends AppCompatActivity{
         }
     };
 
+    //Ist beim Start flase
+    //wir beim ersten Buttonklick auf true gesetzt
+    //Wenn die Variable noch auf False steht, bedeutet das, dass Alle Feldwerte usw. generiert werden müssen.
+    //Wenn sie auf True steht, wird ganz normal das Feld aufgedeckt.
+    protected static boolean start = false;
+    //Für Debugging Zweck erstmal auf true gestellt.
+
+    private void firststart(){
+        //Bei ersten Klick müssen die Zahlen gerniert werden und an der Stelle wo man klickt
+        //muss das Feld frei bleiben
+        start=true;
+
+        //Debug Ausgaben
+        System.out.println("Breite " + breite + minenanzahl);
+
+        //Zahlen erstellen
+        Zahlen zahlen = new Zahlen();
+        zahlen.generateminen(breite, felderarray, minenanzahl);
+
+        //Neue Zahlen für jedes Feld generieren, Breite Holt er sich aus der Globalen statischen Variablen
+        for(int i=0; i<breite*breite; i++){
+            Button btn = buttonarray[i];
+            int buttonnumber = (int) btn.getTag();
+            zahlen.createnumbersmain(buttonnumber, btn, felderarray, breite);
+        }
+
+        //Startfeld setzen
+        Felder.setstart(breite, felderarray, buttonarray);
+
+        //Timer starten
+        timerunnable.run();
+    }
+
     View.OnClickListener clickgame = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            //Buttontext auslesen und in eine Zahl umwandeln
-            Button btn = (Button)view;
-            int btntag= (int) btn.getTag();
-            System.out.println(btntag);
-            //Wenn Markieren aus Wahr ist, wird der Button markiert
-            //Wenn Markiern auf Falsch ist, und der Markspeicher keinen wert für den
-            //Button hat, wir die Methode für den Feldcheck aufgerufen.
-            if (markieren==false && markspeicher[btntag]==0 && pause == false){
-                //Check ob der Button eine Mine ist und gibt "false" oder "true" zurück.
-                if (!felder.feldcheck(btn, breite, markspeicher, buttonarray, felderarray)){
-                    Aufdecken.startaufdecken(btn, btntag, felderarray, buttonarray, breite, linkerrand, rechterrand, minenanzahl, playstatus);
-                }else{
-                    Button btntime = findViewById(R.id.btntime);
-                    String Zeit = (String) btntime.getText();
-                    handler.removeCallbacksAndMessages(null);
-                    goToEndscreen(2);
+            if (start==false){
+                firststart();
+            }else if (start==true){
+                //Buttontext auslesen und in eine Zahl umwandeln
+                Button btn = (Button)view;
+                int btntag= (int) btn.getTag();
+                System.out.println(btntag);
+
+                //Wenn Markieren aus Wahr ist, wird der Button markiert
+                //Wenn Markiern auf Falsch ist, und der Markspeicher keinen wert für den
+                //Button hat, wir die Methode für den Feldcheck aufgerufen.
+                if (markieren==false && markspeicher[btntag]==0 && pause == false) {
+                    //Check ob der Button eine Mine ist und gibt "false" oder "true" zurück.
+                    if (!felder.feldcheck(btn, breite, markspeicher, buttonarray, felderarray)){
+                        Aufdecken.startaufdecken(btn, btntag, felderarray, buttonarray, breite, linkerrand, rechterrand, minenanzahl, playstatus);
+                    }else{
+                        handler.removeCallbacksAndMessages(null);
+                        goToEndscreen(2);
+                    }
+                }else if (markieren==true && pause == false){
+                    System.out.println("markieren" + btn);
+                    markierenbutton(btn);
                 }
-            }else if (markieren==true && pause == false){
-                System.out.println("markieren" + btn);
-                markierenbutton(btn);
             }
         }
     };

@@ -29,6 +29,8 @@ public class Endscreen extends AppCompatActivity {
         btnnochmalspielen=findViewById(R.id.btnnochmalspielen);
         btnnochmalspielen.setOnClickListener(clickendscreen);
 
+        Game.start = false;
+
         //Labels
         TextView txtdauer = findViewById(R.id.txtdauer);
         TextView txtendscreen = findViewById(R.id.txtendscreen);

@@ -7,6 +7,10 @@ import java.util.Random;
 
 public class Zahlen {
 
+    private ArrayList linkerrand;
+    private ArrayList rechterrand;
+
+
     protected int random(int anzahlfelder){
         Random randomgenerator = new Random();
         int feldnummer = randomgenerator.nextInt(anzahlfelder-1) ;
@@ -77,12 +81,9 @@ public class Zahlen {
         felderarray[buttonnumber]=zw;
     }
 
-    private ArrayList linkerrand;
-    private ArrayList rechterrand;
-
     void createnumbersmain(int buttonnumber, Button btn, int[] felderarray, int breite){
-        boolean contains;
-        createraender(breite);
+        rechterrand = Game.rechterrand;
+        linkerrand = Game.linkerrand;
 
         if(checkmine(buttonnumber, felderarray)!=1){
             if(linkerrand.contains(buttonnumber) ){
@@ -95,26 +96,5 @@ public class Zahlen {
                 createnumbers(btn, breite, felderarray);
             }
         }
-    }
-
-    void createraender(int breite){
-        rechterrand = new ArrayList<>();
-        linkerrand = new ArrayList<>();
-        //Ränder beschreiben
-        // Erleichtert die Checks, da nur abgefragt werden muss, ob der Button im Rand ist.
-        int rechts = -1;
-        int links = 0;
-        do{
-            linkerrand.add(links);
-            links=links+breite;
-        }while(links<breite*breite);
-        do{
-            if(rechts>0){
-                rechterrand.add(rechts);
-            }
-            rechts=rechts+breite;
-        }while(rechts<breite*breite);
-        System.out.println("Linker Rand: " + linkerrand);
-        System.out.println("Rechter Rand: " + rechterrand);
     }
 }
