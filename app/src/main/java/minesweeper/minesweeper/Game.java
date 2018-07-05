@@ -41,6 +41,44 @@ public class Game extends AppCompatActivity{
     private Runnable timerunnable = null;
     private static Handler handler = null;
 
+    //Ist beim Start flase
+    //wir beim ersten Buttonklick auf true gesetzt
+    //Wenn die Variable noch auf False steht, bedeutet das, dass Alle Feldwerte usw. generiert werden müssen.
+    //Wenn sie auf True steht, wird ganz normal das Feld aufgedeckt.
+    protected static boolean start = false;
+
+    void createobjekts(){
+        //Arrays erstellen lassen
+        buttonarray = new Button[breite*breite];
+        markspeicher = new int[breite*breite];
+        felderarray = new int[breite*breite];
+        rechterrand = new ArrayList<>();
+        linkerrand = new ArrayList<>();
+        playstatus = new int[breite*breite];
+        btnende = findViewById(R.id.btnende);
+        btnende.setOnClickListener(clickgamemenue);
+        btntime = findViewById(R.id.btntime);
+        btntime.setOnClickListener(clickgamemenue);
+        btnmark = findViewById(R.id.btnmark);
+        btnmark.setOnClickListener(clickgamemenue);
+        felder = new Felder();
+        Aufdecken = new Aufdecken();
+        //Timer erstellen
+        time=0;
+        handler = new Handler();
+        timerunnable = new Runnable() {
+            @Override
+            public void run() {
+                time++;
+                Button btntime = findViewById(R.id.btntime);
+                String timestring = String.valueOf(time);
+                btntime.setText(timestring);
+                //System.out.println(time);
+                handler.postDelayed(this, 1000);
+            }
+        };
+    }
+
     void createraender(int breite){
         rechterrand = new ArrayList<>();
         linkerrand = new ArrayList<>();
@@ -109,10 +147,6 @@ public class Game extends AppCompatActivity{
         return checkbutton;
     }
 
-    static Handler gethandler(){
-        return handler;
-    }
-
     public void goToEndscreen(int Funktion) {
         Context mContext = Startscreen.getContext();
         Intent endscreen = new Intent(mContext, Endscreen.class);
@@ -124,66 +158,6 @@ public class Game extends AppCompatActivity{
     static void arrayausgeben(int[] array){
         for(int i=0; i<array.length; i++){
             System.out.print(array[i]);
-        }
-    }
-
-    void createobjekts(){
-        //Arrays erstellen lassen
-        buttonarray = new Button[breite*breite];
-        markspeicher = new int[breite*breite];
-        felderarray = new int[breite*breite];
-        rechterrand = new ArrayList<>();
-        linkerrand = new ArrayList<>();
-        playstatus = new int[breite*breite];
-        btnende = findViewById(R.id.btnende);
-        btnende.setOnClickListener(clickgamemenue);
-        btntime = findViewById(R.id.btntime);
-        btntime.setOnClickListener(clickgamemenue);
-        btnmark = findViewById(R.id.btnmark);
-        btnmark.setOnClickListener(clickgamemenue);
-        felder = new Felder();
-        Aufdecken = new Aufdecken();
-        //Timer erstellen
-        time=0;
-        handler = new Handler();
-        timerunnable = new Runnable() {
-            @Override
-            public void run() {
-                time++;
-                Button btntime = findViewById(R.id.btntime);
-                String timestring = String.valueOf(time);
-                btntime.setText(timestring);
-                //System.out.println(time);
-                handler.postDelayed(this, 1000);
-            }
-        };
-    }
-
-    void ButtonOnClickGame(View view1){
-        Button btn = findViewById(view1.getId());
-        switch (view1.getId()){
-            case R.id.btnende:
-                handler.removeCallbacksAndMessages(null);
-                goToEndscreen(2);
-                break;
-            case R.id.btntime:
-                if (pause==false){
-                    pause=true;
-                    handler.removeCallbacksAndMessages(null);
-                }else if (pause==true){
-                    pause=false;
-                    timerunnable.run();
-                }
-                break;
-            case R.id.btnmark:
-                if (markieren==true){
-                    markieren=false;
-                    btn.setText("Markieren aus");
-                }else if (markieren==false){
-                    markieren=true;
-                    btn.setText("Markieren an");
-                }
-                break;
         }
     }
 
@@ -213,9 +187,73 @@ public class Game extends AppCompatActivity{
 
         //Spielfeld-Buttons erstellen
         createbuttons(tableLayout, breite);
-
     }
 
+    private void firststart(int startbutton){
+        //Bei ersten Klick müssen die Zahlen generiert werden
+        //Ausgehen von dem Button wo man angeklickt hat
+        //Dieser muss frei bleiben
+
+        //Start druchgeführt, d.h. Variable setzen um erneutes Zahlen genereien zu verhindern.
+        start=true;
+
+        //Debug Ausgaben
+        System.out.println("Breite " + breite + minenanzahl);
+
+        //Zahlen erstellen
+        Zahlen zahlen = new Zahlen();
+        zahlen.generateminen(breite, felderarray, minenanzahl, startbutton);
+
+        //Neue Zahlen für jedes Feld generieren, Breite Holt er sich aus der Globalen statischen Variablen
+        for(int i=0; i<breite*breite; i++){
+            Button btn = buttonarray[i];
+            int buttonnumber = (int) btn.getTag();
+            zahlen.createnumbersmain(buttonnumber, btn, felderarray, breite);
+        }
+
+        //Timer starten
+        timerunnable.run();
+    }
+
+    View.OnClickListener clickgame = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+
+            //Buttontext auslesen und in eine Zahl umwandeln
+            Button btn = (Button)view;
+            int btntag= (int) btn.getTag();
+            System.out.println(btntag);
+
+            if (start==false){
+                //Methode welche die Zahlenwerte usw. erstellt
+                firststart(btntag);
+                if (!felder.feldcheck(btn, breite, markspeicher, buttonarray, felderarray)){
+                    Aufdecken.startaufdecken(btn, btntag, felderarray, buttonarray, breite, linkerrand, rechterrand, minenanzahl, playstatus);
+                }else{
+                    handler.removeCallbacksAndMessages(null);
+                    goToEndscreen(2);
+                }
+            }else if (start==true){
+                //Wenn Markieren aus Wahr ist, wird der Button markiert
+                //Wenn Markiern auf Falsch ist, und der Markspeicher keinen wert für den
+                //Button hat, wir die Methode für den Feldcheck aufgerufen.
+                if (markieren==false && markspeicher[btntag]==0 && pause == false) {
+                    //Check ob der Button eine Mine ist und gibt "false" oder "true" zurück.
+                    if (!felder.feldcheck(btn, breite, markspeicher, buttonarray, felderarray)){
+                        Aufdecken.startaufdecken(btn, btntag, felderarray, buttonarray, breite, linkerrand, rechterrand, minenanzahl, playstatus);
+                    }else{
+                        handler.removeCallbacksAndMessages(null);
+                        goToEndscreen(2);
+                    }
+                }else if (markieren==true && pause == false){
+                    System.out.println("markieren" + btn);
+                    markierenbutton(btn);
+                }
+            }
+        }
+    };
+
+    //Clicklistener für die Menübuttons
     View.OnClickListener clickgamemenue = new View.OnClickListener() {
         @Override
         public void onClick(View viewgamemenue) {
@@ -247,66 +285,8 @@ public class Game extends AppCompatActivity{
         }
     };
 
-    //Ist beim Start flase
-    //wir beim ersten Buttonklick auf true gesetzt
-    //Wenn die Variable noch auf False steht, bedeutet das, dass Alle Feldwerte usw. generiert werden müssen.
-    //Wenn sie auf True steht, wird ganz normal das Feld aufgedeckt.
-    protected static boolean start = false;
-    //Für Debugging Zweck erstmal auf true gestellt.
 
-    private void firststart(){
-        //Bei ersten Klick müssen die Zahlen gerniert werden und an der Stelle wo man klickt
-        //muss das Feld frei bleiben
-        start=true;
-
-        //Debug Ausgaben
-        System.out.println("Breite " + breite + minenanzahl);
-
-        //Zahlen erstellen
-        Zahlen zahlen = new Zahlen();
-        zahlen.generateminen(breite, felderarray, minenanzahl);
-
-        //Neue Zahlen für jedes Feld generieren, Breite Holt er sich aus der Globalen statischen Variablen
-        for(int i=0; i<breite*breite; i++){
-            Button btn = buttonarray[i];
-            int buttonnumber = (int) btn.getTag();
-            zahlen.createnumbersmain(buttonnumber, btn, felderarray, breite);
-        }
-
-        //Startfeld setzen
-        Felder.setstart(breite, felderarray, buttonarray);
-
-        //Timer starten
-        timerunnable.run();
+    static Handler gethandler(){
+        return handler;
     }
-
-    View.OnClickListener clickgame = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            if (start==false){
-                firststart();
-            }else if (start==true){
-                //Buttontext auslesen und in eine Zahl umwandeln
-                Button btn = (Button)view;
-                int btntag= (int) btn.getTag();
-                System.out.println(btntag);
-
-                //Wenn Markieren aus Wahr ist, wird der Button markiert
-                //Wenn Markiern auf Falsch ist, und der Markspeicher keinen wert für den
-                //Button hat, wir die Methode für den Feldcheck aufgerufen.
-                if (markieren==false && markspeicher[btntag]==0 && pause == false) {
-                    //Check ob der Button eine Mine ist und gibt "false" oder "true" zurück.
-                    if (!felder.feldcheck(btn, breite, markspeicher, buttonarray, felderarray)){
-                        Aufdecken.startaufdecken(btn, btntag, felderarray, buttonarray, breite, linkerrand, rechterrand, minenanzahl, playstatus);
-                    }else{
-                        handler.removeCallbacksAndMessages(null);
-                        goToEndscreen(2);
-                    }
-                }else if (markieren==true && pause == false){
-                    System.out.println("markieren" + btn);
-                    markierenbutton(btn);
-                }
-            }
-        }
-    };
 }

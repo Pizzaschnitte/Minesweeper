@@ -18,6 +18,7 @@ public class Zahlen {
     }
 
     protected int checkmine(int number, int[] felderarray){
+        //gibt 1 für Mine oder 0 für keine Mine zurück
         try{
             if (felderarray[number]==(9)){
                 return 1;
@@ -30,10 +31,18 @@ public class Zahlen {
         }
     }
 
-    void generateminen(int breite, int[] felderarray, int minenanzahl){
+    void generateminen(int breite, int[] felderarray, int minenanzahl, int startbutton){
+        //Solange Minenanzahl nicht den vorgegebenen Wert erreicht hat,
+        //erstelle eine Zufallszahls-Feldzahl, welchem die Mine zugewiesen wird
         while(0<minenanzahl){
             int random = random(breite*breite);
-            if(checkmine(random, felderarray)!=1){
+            //falls diese Feld-Zahl schon eine Mine hat, oder Sie im Umfeld des Anfangsfelds liegt,
+            //wird die Minenzahl nicht verändert.
+            if(checkmine(random, felderarray)!=1 && random!=startbutton
+                    && random!=startbutton-1 && random!=startbutton+1
+                    && random!=startbutton-breite && random!=startbutton+breite
+                    && random!=startbutton-(breite+1)  && random!=startbutton+(breite+1)
+                    && random!=startbutton-(breite-1) && random!=startbutton+(breite-1)){
                 felderarray[random] = 9;
                 minenanzahl--;
             }

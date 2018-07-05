@@ -70,15 +70,4 @@ public class Felder {
                 break;
         }
     }
-
-    static void setstart(int breite, int[] felderarray, Button[] buttonarray){
-        //Diese Methode setzt für den ersten Freien Button eine Markierung, damit man einenPunkt zum Beginnen hat.
-        for (int i=0; i<breite*breite; i++){
-            if (felderarray[i]==0){
-                buttonarray[i].setBackgroundResource(R.drawable.start);
-                break;
-            }
-        }
-    }
-
 }
